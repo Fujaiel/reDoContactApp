@@ -1,35 +1,55 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "./components/Modal";
 import useContactStore, { Contact } from "./store/store";
 import ContactList from "./components/ContactList";
+import useModalHooks from "./customHooks/useModalHooks";
 
 const App = () => {
-
-  const [isOpen, setIsOpen] = useState(false);
   const addContact = useContactStore((state) => state.addContact);
   const contacts = useContactStore((state) => state.contacts);
+  const fetchContacts = useContactStore((state) => state.getContact);
+
+  // fetch contacts
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
+
+  // Modal related
+  const {isOpen, openModal, closeModal} = useModalHooks();
+
+  // const [isOpen, setIsOpen] = useState(false);
+  // const openModal = () => {
+  //   setIsOpen(true);
+  //   setIsOpen(!isOpen);
+  // };
+
+  // const closeModal = () => {
+  //   setIsOpen(false);
+  // };
+
 
   // add contacts
-  const handleAddContacts = (contact: Contact)=>{
-    addContact(contact)
-    closeModal();
+  const handleAddContacts = (contact: Contact) => {
+    if (contact.name && contact.phone) {
+      addContact(contact);
+      closeModal();
+    } else {
+      console.error("please provide both fields");
+    }
+  };
 
-  }
-  
   // search
   const [searchTerm, setSearchTerm] = useState("");
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredContacts = contacts.filter(
+    (contact) =>
+      // contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+      contact &&
+      contact.name &&
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openModal = () => {
-    setIsOpen(true);
-    setIsOpen(!isOpen);
-  };
-
-  const closeModal = () => {
-    setIsOpen(false);
-  };
+ 
 
   return (
     <div className=" border border-white rounded-lg content-center w-fit p-4 relative my-4">
@@ -43,7 +63,7 @@ const App = () => {
             className=" h-10 w-full px-2 rounded-md"
             placeholder="Search"
             value={searchTerm}
-            onChange={(e)=> setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <button
@@ -55,9 +75,20 @@ const App = () => {
       </div>
 
       {isOpen && <Modal closeModal={closeModal} onSubmit={handleAddContacts} />}
+
       <div>
-        <ContactList contacts={filteredContacts} />
+        {filteredContacts && filteredContacts.length > 0 ? (
+          <ContactList contacts={filteredContacts} />
+        ) : (
+          <div className=" flex flex-col items-center my-2">
+            <h2 className=" text-2xl text-white font-bold">
+              Click on Add button! 😎
+            </h2>
+            <p className=" text-red-600 font-medium">No contacts found.</p>
+          </div>
+        )}
       </div>
+      
     </div>
   );
 };

@@ -5,7 +5,6 @@ import ModalTemplate from "./ModalTemplate";
 type ModalFormProp = {
   closeModal: () => void;
   onSubmit: (contact: Contact) => void;
-  // initialContact?: Contact;
 };
 const Modal: React.FC<ModalFormProp> = ({
   closeModal,
@@ -13,28 +12,24 @@ const Modal: React.FC<ModalFormProp> = ({
   // initialContact,
 }) => {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-
-  // useEffect
-  // useEffect(() => {
-  //   if (initialContact) {
-  //     setName(initialContact.name);
-  //     setPhone(initialContact.phone);
-  //   }
-  // }, [initialContact]);
+  const [phone, setPhone] = useState(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newContact: Contact = {
-      id: Date.now(),
-      name,
-      phone,
-    };
-    onSubmit(newContact);
-    setName("");
-    setPhone("");
-    closeModal();
+    if (name && phone) {
+      const newContact: Contact = {
+        id: Date.now(),
+        name: name,
+        phone: phone,
+      };
+      onSubmit(newContact);
+      setName("");
+      setPhone(0);
+      closeModal();
+    } else {
+      console.error("put");
+    }
   };
 
   return (
@@ -64,7 +59,13 @@ const Modal: React.FC<ModalFormProp> = ({
               placeholder="Phone Number"
               className="bg-transparent border w-full  border-gray-900 rounded-md h-10 px-4"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const re = /^[0-9\b]+$/;
+                if (e.target.value === "" || re.test(e.target.value)) {
+                  const numericValue = parseInt(e.target.value, 10);
+                  setPhone(numericValue);
+                }
+              }}
             />
             <button
               type="submit"

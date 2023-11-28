@@ -1,10 +1,16 @@
 import { create } from "zustand";
-import axios from "axios";
+
+import {
+  editContact,
+  createContact,
+  removeContact,
+  fetchContacts,
+} from "../api/api";
 
 export type Contact = {
   id: number;
   name: string;
-  phone: string;
+  phone: number;
 };
 
 type State = {
@@ -17,29 +23,51 @@ type State = {
 
 const useContactStore = create<State>((set) => ({
   contacts: [],
-  addContact: (contact) =>
-    set((state) => ({ contacts: [...state.contacts, contact] })),
-  deleteContact: (id) =>
-    set((state) => ({
-      contacts: state.contacts.filter((contact) => contact.id !== id),
-    })),
-  updateContact: (id, updateContact) =>
-    set((state) => ({
-      contacts: state.contacts.map((contact) =>
-        contact.id === id ? updateContact : contact
-      ),
-    })),
+  // add contact
+  addContact: async (contact) => {
+    try {
+      const newContact = await createContact(contact);
+      set((state) => ({ contacts: [...state.contacts, newContact] }));
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  // delete contact
+  deleteContact: async (id) => {
+    try {
+      await removeContact(id);
+      set((state) => ({
+        contacts: state.contacts.filter((contact) => contact.id !== id),
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  // update contact
+  updateContact: async (id, updateContact) => {
+    try {
+      await editContact(id, updateContact);
+      set((state) => ({
+        contacts: state.contacts.map((contact) =>
+          contact.id === id ? updateContact : contact
+        ),
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  // fetch contacts
   getContact: async () => {
     try {
-      const response = await axios.get<Contact[]>(
-        "http://localhost:3030/contacts"
-      );
-      set(() => ({ contacts: response.data }));
+      const contacts = await fetchContacts();
+      set(() => ({ contacts }));
     } catch (error) {
       console.log(error);
     }
   },
 }));
 
-
-export default useContactStore
+export default useContactStore;

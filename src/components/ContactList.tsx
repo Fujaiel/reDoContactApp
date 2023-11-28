@@ -27,6 +27,8 @@ const ContactList: React.FC<ContactListProps> = ({ contacts }) => {
     setEditName("");
     setEditPhone("");
   };
+
+  
   return (
     <>
       <div>
@@ -65,8 +67,12 @@ const ContactList: React.FC<ContactListProps> = ({ contacts }) => {
               </div>
             ) : (
               <div>
-                <h3 className="my-2">{contact.name}</h3>
-                <p className="my-2">{contact.phone}</p>
+                {contact && contact.name && (
+                  <h3 className="my-2">{contact.name}</h3>
+                )}
+                {contact && contact.phone && (
+                  <p className="my-2">{contact.phone}</p>
+                )}
                 <button
                   className="mr-2 bg-purple-700 px-4 py-2 rounded-md hover:bg-purple-500 mb-2"
                   onClick={() => {
